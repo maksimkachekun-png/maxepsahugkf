@@ -154,8 +154,7 @@ def prof(u):
         f"> — *📊 Статистика:*\n"
         f"> 💰 *Сегодня:* `{fmt(u['today_earned'] or 0)}$`\n"
         f"> 📦 *Сдано номеров:* `{u['total_orders'] or 0}`\n"
-        f"> 💵 *Всего оплачено:* `{fmt(u['total_earned'] or 0)}$`\n\n"
-        f"> — _Вывод происходит от 30$ и выше_"
+        f"> 💵 *Всего оплачено:* `{fmt(u['total_earned'] or 0)}$`"
     )
 
 def prof_kb():
@@ -328,10 +327,13 @@ def worker():
 threading.Thread(target=worker, daemon=True).start()
 
 def activity_checker(oid, uid, mid):
-    time.sleep(activity_timeout)
-    try:
-        o = get_o(oid)
-        if o and o['status'] == 'in_queue':
+    while True:
+        time.sleep(activity_timeout)
+        try:
+            o = get_o(oid)
+            if not o or o['status'] != 'in_queue':
+                break
+            
             msg = bot.send_message(
                 uid,
                 f"> ⚠️ *Внимание\\!*\n> Ваш номер `{o['phone']}` всё ещё в очереди\\.\n> Позиция: *{get_queue_position(uid)}*\n> \n> _У вас есть 2 минуты чтобы нажать кнопку ниже и продлить номер в очереди, иначе он будет удалён\\._",
@@ -343,6 +345,15 @@ def activity_checker(oid, uid, mid):
             db().commit()
             
             time.sleep(activity_confirm)
+            
+            u = get_u(uid)
+            if u and u['activity_msg_id'] is None:
+                try:
+                    bot.delete_message(uid, msg.message_id)
+                except:
+                    pass
+                continue
+            
             o2 = get_o(oid)
             if o2 and o2['status'] == 'in_queue':
                 cur = db().cursor()
@@ -350,17 +361,22 @@ def activity_checker(oid, uid, mid):
                 cur.execute("UPDATE users SET in_queue=0, queue_msg_id=NULL, activity_msg_id=NULL WHERE id=?", (uid,))
                 db().commit()
                 update_queue_positions()
-                notify_queue_users()
+                notify_queue_users()               
                 try:
-                    bot.edit_message_text("> ❌ *Время вышло\\.*\n> Ваш номер удалён из очереди\\.", uid, mid, parse_mode="MarkdownV2")
+                    bot.delete_message(uid, mid)
+                except:
+                    pass
+                try:
+                    bot.send_message(uid, "> ❌ *Время вышло\\.*\n> Ваш номер удалён из очереди\\.", parse_mode="MarkdownV2")
                 except:
                     pass
                 try:
                     bot.delete_message(uid, msg.message_id)
                 except:
                     pass
-    except:
-        pass
+            break
+        except:
+            break
 
 def add_u(uid, n, un):
     c = db().cursor()
@@ -595,6 +611,7 @@ def confirm_add(c):
     bot.answer_callback_query(c.id)
 
 @bot.callback_query_handler(func=lambda c: c.data.startswith("keep_"))
+@bot.callback_query_handler(func=lambda c: c.data.startswith("keep_"))
 def confirm_active(c):
     uid = c.from_user.id
     oid = int(c.data.split("_")[1])
@@ -612,20 +629,19 @@ def confirm_active(c):
     
     if u and u['queue_msg_id']:
         try:
-            bot.edit_message_text(
-                f"> ✅ *Номер `{o['phone']}` принят\\!*\n> \n> ⏳ *Ожидайте запроса кода\\.*\n> \n> — _Код должен состоять из 6 цифр\\. Ввод неверных данных карается баном\\._\n> \n> _Активность подтверждена\\. Ожидайте\\._",
-                uid, u['queue_msg_id'], parse_mode="MarkdownV2"
-            )
+            bot.delete_message(uid, u['queue_msg_id'])
         except:
             pass
     
+    txt = f"> ✅ *Номер `{o['phone']}` принят\\!*\n> \n> ⏳ *Ожидайте запроса кода\\.*\n> \n> — _Код должен состоять из 6 цифр\\. Ввод неверных данных карается баном\\._\n> \n> _Номер продлён\\. Если не примут, кнопка появится снова через 3 минуты\\._"
+    msg = bot.send_message(uid, txt, parse_mode="MarkdownV2")
+    
     cur = db().cursor()
-    cur.execute("UPDATE users SET activity_msg_id=NULL WHERE id=?", (uid,))
+    cur.execute("UPDATE users SET activity_msg_id=NULL, queue_msg_id=? WHERE id=?", (msg.message_id, uid))
     db().commit()
     
-    threading.Thread(target=activity_checker, args=(oid, uid, u['queue_msg_id']), daemon=True).start()
-    bot.answer_callback_query(c.id, "✅ Активность подтверждена!", show_alert=True)
-
+    bot.answer_callback_query(c.id, "✅ Номер продлён!", show_alert=True)
+    
 @bot.callback_query_handler(func=lambda c: c.data == "back_start")
 def back_to_start(c):
     uid = c.from_user.id
