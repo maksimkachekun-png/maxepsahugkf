@@ -6,7 +6,7 @@ from telebot import types
 token = "8851393750:AAHrjTXWu7RVHBTfPwlpWhlQXs3kSkhX-Ns"
 channel_id = -1003921825287
 channel_link = "https://t.me/MaxFastRent"
-admin = 8498711039
+admin = 8931234693
 payment = 4.0
 hold = 5 * 60
 timeout_phone = 60
