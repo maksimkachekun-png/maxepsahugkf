@@ -15,7 +15,7 @@ timeout_pwd = 3 * 60
 queue_timeout = 10 * 60
 activity_timeout = 3 * 60
 activity_confirm = 2 * 60
-min_withdraw = 30.0
+min_withdraw = 1
 
 group = [-1003937631256]
 vyvod_channel = "https://t.me/+sc_mqhfbZiwxZjVi"
