@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 import telebot
 from telebot import types
 
-token = "8740935975:AAH0qOTMhswkGQ6BZcI7hSr4uN8lnoDiKAg"
-channel_id = -1003575639896
-channel_link = "https://t.me/rentmaxwork"
-admin = 8074992245
+token = "8851393750:AAHrjTXWu7RVHBTfPwlpWhlQXs3kSkhX-Ns"
+channel_id = -1003937631256
+channel_link = "https://t.me/MaxFastRent"
+admin = 8498711039
 payment = 4.0
 hold = 5 * 60
 timeout_phone = 60
