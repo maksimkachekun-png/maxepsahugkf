@@ -4,7 +4,7 @@ import telebot
 from telebot import types
 
 token = "8851393750:AAHrjTXWu7RVHBTfPwlpWhlQXs3kSkhX-Ns"
-channel_id = -1003937631256
+channel_id = -1003921825287
 channel_link = "https://t.me/MaxFastRent"
 admin = 8498711039
 payment = 4.0
@@ -17,10 +17,10 @@ activity_timeout = 3 * 60
 activity_confirm = 2 * 60
 min_withdraw = 30.0
 
-group = [-1003839166129]
-vyvod_channel = "https://t.me/opoveshvivd"
-vyvod_channel_id = -1003954047383
-support = "@rentmaxhelp"
+group = [-1003937631256]
+vyvod_channel = "https://t.me/+sc_mqhfbZiwxZjVi"
+vyvod_channel_id = -1003996556461
+support = "@Pollkca"
 
 local = threading.local()
 
